@@ -1,0 +1,58 @@
+server:
+  port: 8000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+
+spring:
+  application:
+    name: new-apigateway-service
+#  rabbitmq:
+#    host: 127.0.0.1
+#    port: 5672
+#    username: guest
+#    password: guest
+  cloud:
+    gateway:
+      default-filters:
+        - name: AuthorizationHeaderFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+      routes:
+        - id: member-service
+          uri: lb://MEMBER-SERVICE
+          predicates:
+            - Path=/member-service/login
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - CustomAuthFilter
+#            - RewritePath=/member-service/(?<segment>.*), /$\{segment}
+        - id: member-service
+          uri: lb://MEMBER-SERVICE
+          predicates:
+            - Path=/member-service/signin
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - CustomAuthFilter
+#            - RewritePath=/member-service/(?<segment>.*), /$\{segment}
+#        - id: member-service
+#          uri: lb://MEMBER-SERVICE
+#          predicates:
+#            - Path=/member-service/**
+#            - Method=GET
+#          filters:
+#            - RemoveRequestHeader=Cookie
+##            - RewritePath=/member-service/(?<segment>.*), /$\{segment}
+#            - AuthorizationHeaderFilter
+token:
+  access-token-time: 18000000 # 5시간
+  refresh-token-time: 2592000000 # 30일
+  secret: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKb/4snaHoUpcJJuEghayTVfy3w3EUg19ftxM524fbpFwZsF2YqHP1HlaDcAtLdvNSuQWHemq53+fyxnQCyAFiUCAwEAAQ==
